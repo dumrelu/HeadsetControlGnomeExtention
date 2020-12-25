@@ -1,0 +1,10 @@
+{
+    "name" : "HedsetControlGnomeExtention",
+    "description" : "Simple extention for the HeadsetControl utility",
+    "shell-version" : [
+        "3.36"
+    ],
+    "url" : "https://github.com/dumrelu/HeadsetControlGnomeExtention",
+    "uuid" : "HeadsetControlGnomeExtention@dum.relu",
+    "version" : 1.0
+}
