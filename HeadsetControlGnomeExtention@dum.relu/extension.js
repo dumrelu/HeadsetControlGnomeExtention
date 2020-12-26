@@ -7,12 +7,17 @@ const GLib = imports.gi.GLib;
     TODO: 
         v Will most likely also need a label for the current battery percentage.
         v Notification when battery level is low
+        - Battery color
         - Real battery level computeation
 */
 
 // Constants
 const lowBatteryNotificationEnabled = false;
 const lowBatteryThreshold = 0.15;
+const mediumBatteryThreshold = 0.35;
+const highBatteryLevelColor = [0, 255, 0];
+const mediumBatteryLevelColor = [255, 165, 0];
+const lowBatteryLevelColor = [255, 0, 0];
 
 // Variables
 let container;
@@ -42,6 +47,22 @@ function onRepaint()
     let bX = 0.5 - (bWidth / 2.0);  //Left battery x
     let bY = 0.5 + (bHeight / 2.0); //Lower battery y
 
+    // Set the battery color
+    let color = [];
+    if(batteryLevel <= lowBatteryThreshold)
+    {
+        color = lowBatteryLevelColor;
+    }
+    else if(batteryLevel <= mediumBatteryThreshold)
+    {
+        color = mediumBatteryLevelColor;
+    }
+    else
+    {
+        color = highBatteryLevelColor;
+    }
+    let [r,g,b] = color;
+    cr.setSourceRGB(r, g, b);
 
     // Draw the battery outline
     cr.moveTo(bX, bY);
@@ -53,14 +74,12 @@ function onRepaint()
     cr.lineTo(bX + (bWidthHalf - gSizeHalf), bY - bHeight);
     cr.lineTo(bX, bY - bHeight);
     cr.lineTo(bX, bY);
-    
-    cr.setSourceRGB(0, 255, 0);
+
     cr.setLineWidth(0.05);
     cr.stroke();
 
     // Draw the fill percentage
     cr.rectangle(bX, bY, bWidth, -bHeight * batteryLevel);
-    cr.setSourceRGB(0, 255, 0);
     cr.setLineWidth(0.4);
     cr.fill();
 
@@ -73,10 +92,10 @@ function updateBatteryPercentage()
 {
     //TODO: call the hetsetcontrol utility
 
-    batteryLevel += 0.1;
-    if(batteryLevel > 1.0)
+    batteryLevel -= 0.1;
+    if(batteryLevel <= 0.0)
     {
-        batteryLevel = 0.0;
+        batteryLevel = 1.0;
     }
 
     // Schedule a repain of the icon
