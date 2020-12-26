@@ -7,9 +7,9 @@ const GLib = imports.gi.GLib;
     TODO: 
         v Will most likely also need a label for the current battery percentage.
         v Notification when battery level is low
-        - Battery color
-        - Only show notification once
-        - hedset not connected icon
+        v Battery color
+        v Only show notification once
+        v hedset not connected icon
         - Real battery level computeation
 */
 
@@ -22,6 +22,7 @@ const lowBatteryNotificationEnabled = false;
 const lowBatteryThreshold = 0.15;
 const mediumBatteryThreshold = 0.35;
 
+const batteryDisconnectedColor = [128, 128, 128];
 const highBatteryLevelColor = [0, 255, 0];
 const mediumBatteryLevelColor = [255, 165, 0];
 const lowBatteryLevelColor = [255, 0, 0];
@@ -31,7 +32,7 @@ let container;
 let drawingArea;
 let label;
 let timeout;
-let batteryLevel = 1.0;
+let batteryLevel = -1.0;
 let lowBatteryNotificationSent;
 
 // Icon painting function
@@ -55,7 +56,11 @@ function onRepaint()
 
     // Set the battery color
     let color = [];
-    if(batteryLevel <= lowBatteryThreshold)
+    if(batteryLevel < 0.0)
+    {
+        color = batteryDisconnectedColor;
+    }
+    else if(batteryLevel <= lowBatteryThreshold)
     {
         color = lowBatteryLevelColor;
     }
@@ -85,9 +90,12 @@ function onRepaint()
     cr.stroke();
 
     // Draw the fill percentage
-    cr.rectangle(bX, bY, bWidth, -bHeight * batteryLevel);
-    cr.setLineWidth(0.4);
-    cr.fill();
+    if(batteryLevel >= 0.0)
+    {
+        cr.rectangle(bX, bY, bWidth, -bHeight * batteryLevel);
+        cr.setLineWidth(0.4);
+        cr.fill();
+    }
 
 
     cr.$dispose();
@@ -100,7 +108,7 @@ function updateBatteryPercentage()
 
     // Dummy code
     batteryLevel -= 0.1;
-    if(batteryLevel <= 0.0)
+    if(batteryLevel <= -0.3)
     {
         batteryLevel = 1.0;
     }
@@ -111,18 +119,26 @@ function updateBatteryPercentage()
         lowBatteryNotificationSent = false;
     }
 
+    // Notify the user that the battery level is low and
+    //to probably plug it in.
+    if(lowBatteryNotificationEnabled && !lowBatteryNotificationSent 
+        && batteryLevel >= 0.0 && batteryLevel <= lowBatteryThreshold)
+    {
+        Main.notify("Low battery", "Lowe battery(" + label.text + "). Please plug headphones.");
+        lowBatteryNotificationSent = true;
+    }
+
     // Schedule a repain of the icon
     drawingArea.queue_repaint();
 
     // Update the label
-    label.text = Math.round(batteryLevel * 100) + "%"
-
-    // Notify the user that the battery level is low and
-    //to probably plug it in.
-    if(lowBatteryNotificationEnabled && !lowBatteryNotificationSent && batteryLevel <= lowBatteryThreshold)
+    if( batteryLevel >= 0.0) 
     {
-        Main.notify("Low battery", "Lowe battery(" + label.text + "). Please plug headphones.");
-        lowBatteryNotificationSent = true;
+        label.text = Math.round(batteryLevel * 100) + "%";
+    }
+    else
+    {
+        label.text = "N/A";
     }
 
     // Continue the loop
