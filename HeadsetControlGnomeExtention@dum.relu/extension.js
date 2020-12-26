@@ -5,14 +5,17 @@ const GLib = imports.gi.GLib;
 
 /*
     TODO: 
-        - Will most likely also need a label for the current battery percentage.
+        v Will most likely also need a label for the current battery percentage.
+        - Notification when battery level is low
 */
 
 // Variables
+let container;
 let drawingArea;
+let label;
 let timeout;
-let iconWidth = 25;
-let iconHeight = 25;
+let iconWidth = Main.panel.height;
+let iconHeight = Main.panel.height;
 let batteryLevel = 1.0;
 
 // Icon painting function
@@ -74,32 +77,42 @@ function updateBatteryPercentage()
     // Schedule a repain of the icon
     drawingArea.queue_repaint();
 
+    // Update the label
+    label.text = Math.round(batteryLevel * 100) + "%"
+
     // Continue the loop
     return true;
 }
 
 function init()
 {
-    log("Initialized");
+    container = new St.BoxLayout({});
 
     drawingArea = new St.DrawingArea({
         width: iconWidth, 
         height: iconHeight
     });
-
     drawingArea.connect("repaint", onRepaint);
+    container.add_child(drawingArea);
+
+    label = new St.Label({
+        text : "0%",
+        y_align: Clutter.ActorAlign.CENTER,
+    });
+    container.add_child(label);
+
+    // Compute the initial value of the battery percentage
+    updateBatteryPercentage();
 }
 
 function enable()
 {
-    log("Enabled");
-    Main.panel._rightBox.insert_child_at_index(drawingArea, 0);
+    Main.panel._rightBox.insert_child_at_index(container, 0);
     timeout = Mainloop.timeout_add_seconds(1.0, updateBatteryPercentage);
 }
 
 function disable()
 {
-    log("Disable");
     Mainloop.source_remove(timeout);
-    Main.panel._rightBox.remove_child(drawingArea);
+    Main.panel._rightBox.remove_child(container);
 }
