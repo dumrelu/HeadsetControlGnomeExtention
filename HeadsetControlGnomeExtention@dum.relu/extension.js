@@ -8,13 +8,20 @@ const GLib = imports.gi.GLib;
         v Will most likely also need a label for the current battery percentage.
         v Notification when battery level is low
         - Battery color
+        - Only show notification once
+        - hedset not connected icon
         - Real battery level computeation
 */
 
 // Constants
+const iconWidth = Main.panel.height;
+const iconHeight = Main.panel.height;
+
 const lowBatteryNotificationEnabled = false;
+
 const lowBatteryThreshold = 0.15;
 const mediumBatteryThreshold = 0.35;
+
 const highBatteryLevelColor = [0, 255, 0];
 const mediumBatteryLevelColor = [255, 165, 0];
 const lowBatteryLevelColor = [255, 0, 0];
@@ -24,9 +31,8 @@ let container;
 let drawingArea;
 let label;
 let timeout;
-let iconWidth = Main.panel.height;
-let iconHeight = Main.panel.height;
 let batteryLevel = 1.0;
+let lowBatteryNotificationSent;
 
 // Icon painting function
 function onRepaint()
@@ -92,10 +98,17 @@ function updateBatteryPercentage()
 {
     //TODO: call the hetsetcontrol utility
 
+    // Dummy code
     batteryLevel -= 0.1;
     if(batteryLevel <= 0.0)
     {
         batteryLevel = 1.0;
+    }
+
+    // Clear notification flag if battery is not low
+    if(batteryLevel > lowBatteryThreshold)
+    {
+        lowBatteryNotificationSent = false;
     }
 
     // Schedule a repain of the icon
@@ -106,9 +119,10 @@ function updateBatteryPercentage()
 
     // Notify the user that the battery level is low and
     //to probably plug it in.
-    if(lowBatteryNotificationEnabled && batteryLevel <= lowBatteryThreshold)
+    if(lowBatteryNotificationEnabled && !lowBatteryNotificationSent && batteryLevel <= lowBatteryThreshold)
     {
         Main.notify("Low battery", "Lowe battery(" + label.text + "). Please plug headphones.");
+        lowBatteryNotificationSent = true;
     }
 
     // Continue the loop
@@ -138,6 +152,7 @@ function init()
 
 function enable()
 {
+    lowBatteryNotificationSent = false;
     Main.panel._rightBox.insert_child_at_index(container, 0);
     timeout = Mainloop.timeout_add_seconds(1.0, updateBatteryPercentage);
 }
