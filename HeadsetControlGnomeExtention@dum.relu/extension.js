@@ -6,8 +6,13 @@ const GLib = imports.gi.GLib;
 /*
     TODO: 
         v Will most likely also need a label for the current battery percentage.
-        - Notification when battery level is low
+        v Notification when battery level is low
+        - Real battery level computeation
 */
+
+// Constants
+const lowBatteryNotificationEnabled = false;
+const lowBatteryThreshold = 0.15;
 
 // Variables
 let container;
@@ -79,6 +84,13 @@ function updateBatteryPercentage()
 
     // Update the label
     label.text = Math.round(batteryLevel * 100) + "%"
+
+    // Notify the user that the battery level is low and
+    //to probably plug it in.
+    if(lowBatteryNotificationEnabled && batteryLevel <= lowBatteryThreshold)
+    {
+        Main.notify("Low battery", "Lowe battery(" + label.text + "). Please plug headphones.");
+    }
 
     // Continue the loop
     return true;
