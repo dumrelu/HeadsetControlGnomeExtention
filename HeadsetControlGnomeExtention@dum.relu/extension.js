@@ -32,7 +32,7 @@ let container;
 let drawingArea;
 let label;
 let timeout;
-let batteryLevel = -1.0;
+let batteryLevel = -1.0;        // Negative battery level indicates the headset is disconnected
 let lowBatteryNotificationSent;
 
 // Icon painting function
@@ -106,11 +106,21 @@ function updateBatteryPercentage()
 {
     //TODO: call the hetsetcontrol utility
 
-    // Dummy code
+    // Dummy code - extract in another function
     batteryLevel -= 0.1;
     if(batteryLevel <= -0.3)
     {
         batteryLevel = 1.0;
+    }
+
+    // Update the label
+    if( batteryLevel >= 0.0) 
+    {
+        label.text = Math.round(batteryLevel * 100) + "%";
+    }
+    else
+    {
+        label.text = "N/A";
     }
 
     // Clear notification flag if battery is not low
@@ -130,16 +140,6 @@ function updateBatteryPercentage()
 
     // Schedule a repain of the icon
     drawingArea.queue_repaint();
-
-    // Update the label
-    if( batteryLevel >= 0.0) 
-    {
-        label.text = Math.round(batteryLevel * 100) + "%";
-    }
-    else
-    {
-        label.text = "N/A";
-    }
 
     // Continue the loop
     return true;
