@@ -14,6 +14,7 @@ const GLib = imports.gi.GLib;
         - install script
         - If disconnected, timeout is 1s. Else is 1m?
         - Click on battery icon to change audio output
+        - Draw a headset icon somewhere
 */
 
 // Constants
