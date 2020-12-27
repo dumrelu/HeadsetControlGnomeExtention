@@ -10,7 +10,9 @@ const GLib = imports.gi.GLib;
         v Battery color
         v Only show notification once
         v hedset not connected icon
-        - Real battery level computeation
+        v Real battery level retrieval
+        - If disconnected, timeout is 1s. Else is 1m?
+        - Click on battery icon to change audio output
 */
 
 // Constants
@@ -101,17 +103,50 @@ function onRepaint()
     cr.$dispose();
 }
 
+// Retrieve the battery level via the "headsetcontrol -b" command
+function getBatteryLevel()
+{
+    var [ok, out, err, exit] = GLib.spawn_command_line_sync(
+        "headsetcontrol -b"
+    );
+
+    let level = -1.0;
+    if(!ok)
+    {
+        log("Error: Please install the headsetcontrol utility");
+    }
+    else if(exit != 0)
+    {
+        log("Headset disconnected");
+    }
+    else
+    {
+        let re = /\d{1,3}%/;
+        let match = re.exec(out)
+        if(match && match.length > 0)
+        {
+            match = match[0].slice(0, -1);
+            level = parseInt(match) / 100.0;
+        }
+        else
+        {
+            log("Regex mismatch for: " + out);
+        }
+    }
+
+    log("Retrieved battery level: " + level);
+
+    return level;
+}
+
 // Called at a given interval to update the battery percentage
 function updateBatteryPercentage()
 {
     //TODO: call the hetsetcontrol utility
+    //TODO: don't update if battery level doesn't change
 
-    // Dummy code - extract in another function
-    batteryLevel -= 0.1;
-    if(batteryLevel <= -0.3)
-    {
-        batteryLevel = 1.0;
-    }
+    // Get the current battery percentage
+    batteryLevel = getBatteryLevel();
 
     // Update the label
     if( batteryLevel >= 0.0) 
