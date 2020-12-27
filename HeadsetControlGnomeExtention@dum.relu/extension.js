@@ -11,6 +11,7 @@ const GLib = imports.gi.GLib;
         v Only show notification once
         v hedset not connected icon
         v Real battery level retrieval
+        - install script
         - If disconnected, timeout is 1s. Else is 1m?
         - Click on battery icon to change audio output
 */
