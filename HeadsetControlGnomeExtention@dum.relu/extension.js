@@ -15,6 +15,7 @@ const GLib = imports.gi.GLib;
         - If disconnected, timeout is 1s. Else is 1m?
         - Click on battery icon to change audio output
         - Draw a headset icon somewhere
+        - Charing icon
 */
 
 // Constants
@@ -207,7 +208,7 @@ function enable()
 {
     lowBatteryNotificationSent = false;
     Main.panel._rightBox.insert_child_at_index(container, 0);
-    timeout = Mainloop.timeout_add_seconds(1.0, updateBatteryPercentage);
+    timeout = Mainloop.timeout_add_seconds(30.0, updateBatteryPercentage);
 }
 
 function disable()
